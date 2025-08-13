@@ -73,6 +73,12 @@ const postsPath = './posts.json';
 const channelsPath = './channels.json';
 const sendPath = './send.json';
 
+function ensureArray(data){
+  if(Array.isArray(data)) return data;
+  if(!data) return [];
+  return Object.values(data);
+}
+
 function formatText(command) {
   document.execCommand(command, false, null);
 }
@@ -106,7 +112,7 @@ function insertLink() {
 async function loadPosts() {
   try {
     const res = await fetch(postsPath);
-    posts = res.ok ? await res.json() : [];
+    posts = res.ok ? ensureArray(await res.json()) : [];
   } catch { posts = []; }
   renderPosts();
 }
@@ -114,7 +120,7 @@ async function loadPosts() {
 async function loadChannels() {
   try {
     const res = await fetch(channelsPath);
-    channels = res.ok ? await res.json() : [];
+    channels = res.ok ? ensureArray(await res.json()) : [];
   } catch { channels = []; }
   renderChannels();
 }
@@ -178,6 +184,7 @@ document.getElementById('createBtn').onclick = async () => {
   const content = document.getElementById('content').innerHTML.trim();
   if (!title || !content) return alert('Введите заголовок и текст');
   const id = crypto.randomUUID();
+  posts = ensureArray(posts);
   posts.unshift({ id, title, content, createdAt: Date.now() });
   await savePosts();
   renderPosts();
@@ -188,6 +195,7 @@ document.getElementById('createBtn').onclick = async () => {
 document.getElementById('addChannelBtn').onclick = async () => {
   const id = document.getElementById('channelId').value.trim();
   if (!id) return alert('Введите ID канала');
+  channels = ensureArray(channels);
   channels.push({ id });
   await saveChannels();
   renderChannels();
